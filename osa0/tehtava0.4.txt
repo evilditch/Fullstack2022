@@ -1,0 +1,13 @@
+[note: käyttäjä kirjoittaa muistiinpanon ja painaa nappia 'tallenna']
+selain->palvelin: HTTP POST /new_note 
+  palvelin-->selain: 302 redirect /notes
+selain->palvelin: HTTP GET /notes
+  palvelin-->selain: HTML-koodi
+selain->palvelin: HTTP GET /main.css
+  palvelin-->selain: main.css
+selain->palvelin: HTTP GET /main.js
+  palvelin-->selain: main.js
+selain->palvelin: HTTP GET /data.json
+  palvelin-->selain: [{ content: "...", date: "..." }, ...]
+
+[note: selain suorittaa tapahtumankäsittelijän ja muistiinpanot renderöidään sivulle]

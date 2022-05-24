@@ -1,0 +1,3 @@
+[note: käyttäjä painaa 'tallenna', uusi muistiinpano renderöidään listan loppuun, sitten lähetetään palvelimelle]
+selain->palvelin: HTTP POST /new_note_spa
+palvelin-->selain: 201 created
