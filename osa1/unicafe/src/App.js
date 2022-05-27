@@ -12,15 +12,21 @@ const Statistics = (props) => {
     if (total > 0) {
         return (
             <div>
-                <p>Annettuja palautteita yhteensä: {total}</p>
-                <p>Palautteiden keskiarvo: {(1*props.good+-1*props.bad)/total}</p>
-                <p>Positiivisia palautteita: {100*props.good/total} %</p>
-                <p>Hyvä {props.good}</p>
-                <p>Neutraali {props.neutral}</p>
-                <p>Huono {props.bad}</p>
+            <StatisticLine text='Palautteita yhteensä' value={total} />
+            <StatisticLine text='Palautteiden keskiarvo:' value={(1*props.good+-1*props.bad)/total} />
+            <StatisticLine text='Positiivisia palautteita (prosentteina):' value={100*props.good/total} />
+            <StatisticLine text='Hyvä' value={props.good} />
+                <StatisticLine text='Neutraali' value={props.neutral} />
+                <StatisticLine text='Huono' value={props.bad} />
                 </div> 
         )
     }
+}
+
+const StatisticLine = (props) => {
+    return (
+        <p>{props.text} {props.value}</p>
+    )
 }
 
 const App = () => {
