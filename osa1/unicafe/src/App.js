@@ -6,17 +6,21 @@ const Button = ({ handleClick, text }) => {
     )
 }
 
-const Feedbacks = (props) => {
+const Statistics = (props) => {
     const total = props.good + props.neutral + props.bad
 
-    return (
-        <div>
-            <p>Annettuja palautteita yhteensä: {total}</p>
-            <p>Hyvä {props.good}</p>
-            <p>Neutraali {props.neutral}</p>
-        <p>Huono {props.bad}</p>
-        </div>
-    )
+    if (total > 0) {
+        return (
+            <div>
+                <p>Annettuja palautteita yhteensä: {total}</p>
+                <p>Palautteiden keskiarvo: {(1*props.good+-1*props.bad)/total}</p>
+                <p>Positiivisia palautteita: {100*props.good/total} %</p>
+                <p>Hyvä {props.good}</p>
+                <p>Neutraali {props.neutral}</p>
+                <p>Huono {props.bad}</p>
+                </div> 
+        )
+    }
 }
 
 const App = () => {
@@ -33,7 +37,7 @@ const App = () => {
                 text={'Neutraali'} />
             <Button handleClick={() => setBad(bad+1)}
                 text={'Huono'} />
-            <Feedbacks good={good} neutral={neutral} bad={bad} />
+            <Statistics good={good} neutral={neutral} bad={bad} />
         </div>
     )
 }
