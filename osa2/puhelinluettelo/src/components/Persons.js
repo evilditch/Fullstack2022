@@ -1,6 +1,6 @@
-const Person = ({ name, phone }) => {
+const Person = ({ name, number }) => {
   return (
-    <p>{name}: {phone}</p>
+    <p>{name}: {number}</p>
   )
 }
 
@@ -10,7 +10,7 @@ const Persons = ({ persons }) => {
       { persons.map((person) =>
         <Person key={person.name}
           name={person.name}
-          phone={person.phone} />
+          number={person.number} />
       )}
     </>
   )

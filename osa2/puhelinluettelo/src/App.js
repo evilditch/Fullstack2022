@@ -1,18 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import axios from 'axios'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', phone: '040-123456' },
-    { name: 'Ada Lovelace', phone: '39-44-5323523' },
-    { name: 'Dan Abramov', phone: '12-43-234345' },
-    { name: 'Mary Poppendieck', phone: '39-23-6423122' }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
-  const [newPhone, setNewPhone] = useState('')
+  const [newNumber, setNewNumber] = useState('')
   const [filtertext, setFiltertext] = useState('')
+  
+  const hook = () => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('suoritettu', response.data)
+        setPersons(response.data)
+      })
+  }
+  
+  useEffect(hook, [])
   
   const addPerson = (event) => {
     event.preventDefault()
@@ -23,14 +31,14 @@ const App = () => {
     } else {
       const newPerson = {
         name: newName,
-        phone: newPhone
+        number: newNumber
       }
 
       setPersons(persons.concat(newPerson))
     }
 
     setNewName('')
-    setNewPhone('')
+    setNewNumber('')
   }
   
   const handleNameChange = (event) => {
@@ -38,7 +46,7 @@ const App = () => {
   }
 
   const handlePhoneChange = (event) => {
-    setNewPhone(event.target.value)
+    setNewNumber(event.target.value)
   }
   
   const handleFilterChange = (event) => {
@@ -50,8 +58,8 @@ const App = () => {
       <h2>Phonebook</h2>
       <PersonForm handleSubmit={addPerson} 
         nameValue={newName}
-      handleChangeName={handleNameChange}
-        phoneValue={newPhone}
+        handleChangeName={handleNameChange}
+        phoneValue={newNumber}
         handleChangePhone={handlePhoneChange}
       />
       <h2>Numbers</h2>
