@@ -3,6 +3,7 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import personService from './services/persons'
+import Notification from './components/Notification'
 import axios from 'axios'
 
 const App = () => {
@@ -10,16 +11,17 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filtertext, setFiltertext] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState(null)
   
-  const hook = () => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('suoritettu', response.data)
-        setPersons(response.data)
-      })
-  }
+  // const hook = () => {
+  //   console.log('effect')
+  //   axios
+  //     .get('http://localhost:3001/persons')
+  //     .then(response => {
+  //       console.log('suoritettu', response.data)
+  //       setPersons(response.data)
+  //     })
+  // }
   
   useEffect(() => {
     personService
@@ -34,7 +36,7 @@ const App = () => {
     
     if (typeof persons.find(({ name }) => name === newName) === 'object') {
       console.log('nimi on jo')
-      alert(` ${ newName } is already added to the phonebook `)
+      newMessage(` ${ newName } is already added to the phonebook `)
     } else {
       const newPerson = {
         name: newName,
@@ -45,11 +47,18 @@ const App = () => {
         .create(newPerson)
         .then((response) => {
           setPersons(persons.concat(response.data))
+          newMessage(`${response.data.name} was added succesfully `)
           setNewName('')
           setNewNumber('')
         })
     }
 
+  }
+  const newMessage = (message) => {
+    setNotificationMessage(message)
+    setTimeout(() => {
+      setNotificationMessage(null)
+    }, 6000)
   }
   
   const handleNameChange = (event) => {
@@ -65,9 +74,11 @@ const App = () => {
   }
   
   const handleDelete = (id) => {
-    if (window.confirm(`Are you sure you want to delete ${persons.find(person => person.id === id).name} from phonebook? `)) {
+    const name = persons.find(person => person.id === id).name
+    if (window.confirm(`Are you sure you want to delete ${name} from phonebook? `)) {
       personService.deletePerson(id)
       setPersons(persons.filter((person) => person.id !== id))
+      newMessage(`${name} deleted`)
     }
     
   }
@@ -75,6 +86,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+    <Notification message={notificationMessage} />
       <PersonForm handleSubmit={addPerson} 
         nameValue={newName}
         handleChangeName={handleNameChange}
