@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import personService from './services/persons'
 import axios from 'axios'
 
 const App = () => {
@@ -20,7 +21,13 @@ const App = () => {
       })
   }
   
-  useEffect(hook, [])
+  useEffect(() => {
+    personService
+      .getAll()
+      .then((response) => {
+        setPersons(response.data)
+      })
+  }, [])
   
   const addPerson = (event) => {
     event.preventDefault()
@@ -34,11 +41,15 @@ const App = () => {
         number: newNumber
       }
 
-      setPersons(persons.concat(newPerson))
+      personService
+        .create(newPerson)
+        .then((response) => {
+          setPersons(persons.concat(response.data))
+          setNewName('')
+          setNewNumber('')
+        })
     }
 
-    setNewName('')
-    setNewNumber('')
   }
   
   const handleNameChange = (event) => {
@@ -51,6 +62,14 @@ const App = () => {
   
   const handleFilterChange = (event) => {
     setFiltertext(event.target.value)
+  }
+  
+  const handleDelete = (id) => {
+    if (window.confirm(`Are you sure you want to delete ${persons.find(person => person.id === id).name} from phonebook? `)) {
+      personService.deletePerson(id)
+      setPersons(persons.filter((person) => person.id !== id))
+    }
+    
   }
   
   return (
@@ -66,7 +85,8 @@ const App = () => {
       <Filter filtertext={filtertext} handleChange={handleFilterChange} />
       <Persons persons={persons.filter(({ name }) =>
           name.toLowerCase().includes(filtertext.toLowerCase())
-        )} />
+        )}
+        handleDelete={handleDelete} />
     </div>
   )
 
