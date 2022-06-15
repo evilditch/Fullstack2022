@@ -13,15 +13,6 @@ const App = () => {
   const [filtertext, setFiltertext] = useState('')
   const [notificationMessage, setNotificationMessage] = useState(null)
   
-  // const hook = () => {
-  //   console.log('effect')
-  //   axios
-  //     .get('http://localhost:3001/persons')
-  //     .then(response => {
-  //       console.log('suoritettu', response.data)
-  //       setPersons(response.data)
-  //     })
-  // }
   
   useEffect(() => {
     personService
@@ -33,27 +24,50 @@ const App = () => {
   
   const addPerson = (event) => {
     event.preventDefault()
-    
-    if (typeof persons.find(({ name }) => name === newName) === 'object') {
-      console.log('nimi on jo')
-      newMessage(` ${ newName } is already added to the phonebook `)
-    } else {
-      const newPerson = {
-        name: newName,
-        number: newNumber
-      }
 
-      personService
-        .create(newPerson)
-        .then((response) => {
-          setPersons(persons.concat(response.data))
-          newMessage(`${response.data.name} was added succesfully `)
-          setNewName('')
-          setNewNumber('')
-        })
+    const newPerson = {
+      name: newName,
+      number: newNumber
     }
 
+    setNewName('')
+    setNewNumber('')
+
+    const existingPerson = persons.find(p => p.name === newPerson.name)
+
+    if (existingPerson) {
+      const ok = window.confirm(`${existingPerson.name} is already added to the phonebook, update the number?`)
+      if (ok) {
+        personService.update(existingPerson.id, {...existingPerson, number: newPerson.number}).then(updatedPerson => {
+          setPersons(persons.map(p => p.id === existingPerson.id ? updatedPerson : p))
+          newMessage(`Updated info of ${updatedPerson.name}`)
+        })
+        .catch(error => {
+          if (error.response.status === 404) {
+            newMessage(`The person '${existingPerson.name}' was already removed from server`)
+            setPersons(persons.filter(p => p.id !== existingPerson.id))
+            return
+          }
+          newMessage(error.response.data.error)
+        })
+        
+        return
+      }
+    }
+
+    personService
+      .create(newPerson)
+      .then((response) => {
+        setPersons(persons.concat(response.data))
+        newMessage(`${response.data.name} was added succesfully `)
+      })
+      .catch(error => {
+        console.log(error.response.data)
+        newMessage(error.response.data.error)
+      })
+
   }
+
   const newMessage = (message) => {
     setNotificationMessage(message)
     setTimeout(() => {
