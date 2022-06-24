@@ -18,12 +18,6 @@ const initialBlogs = [
     likes: 5,
   }
   // {
-  //   title: "Canonical string reduction",
-  //   author: "Edsger W. Dijkstra",
-  //   url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
-  //   likes: 12,
-  // },
-  // {
   //   title: "First class tests",
   //   author: "Robert C. Martin",
   //   url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
@@ -82,6 +76,19 @@ test('a valid blog can be added', async () => {
   expect(response.body).toHaveLength(initialBlogs.length + 1)
   expect(titles).toContain('Type wars')
 
+})
+
+test('if likes not set, likes equal 0', async () => {
+  const newBlog =  {
+    title: "Canonical string reduction",
+    author: "Edsger W. Dijkstra",
+    url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+  }
+  
+  const response = await api.post('/api/blogs')
+    .send(newBlog)
+
+  expect(response.body.likes).toBe(0)
 })
 
 afterAll(() => {
