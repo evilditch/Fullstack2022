@@ -33,10 +33,7 @@ const initialBlogs = [
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  let blogObject =  new Blog(initialBlogs[0])
-  await blogObject.save()
-  blogObject = new Blog(initialBlogs[1])
-  await blogObject.save()
+  await Blog.insertMany(initialBlogs)
 })
 
 test('blogs are returned as json', async () => {
@@ -56,50 +53,69 @@ test('the identifier field is named id', async () => {
   expect(response.body[0].id).toBeDefined()
 })
 
-test('a valid blog can be added', async () => {
-  const newBlog =   {
-    title: "Type wars",
-    author: "Robert C. Martin",
-    url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
-    likes: 2,
-  }
+describe('adding blogs with http post', () => {
+  test('a valid blog can be added', async () => {
+    const newBlog =   {
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      likes: 2,
+    }
 
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
   
-  const response = await api.get('/api/blogs')
-  const titles = response.body.map(r => r.title)
+    const response = await api.get('/api/blogs')
+    const titles = response.body.map(r => r.title)
   
-  expect(response.body).toHaveLength(initialBlogs.length + 1)
-  expect(titles).toContain('Type wars')
+    expect(response.body).toHaveLength(initialBlogs.length + 1)
+    expect(titles).toContain('Type wars')
 
+  })
+
+  test('if likes not set, likes equal 0', async () => {
+    const newBlog =  {
+      title: "Canonical string reduction",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+    }
+  
+    const response = await api.post('/api/blogs')
+      .send(newBlog)
+
+    expect(response.body.likes).toBe(0)
+  })
+
+  test('blog without title and url not added', async () => {
+    const newBlog = {
+      author: 'Ronja Pahaoja',
+      likes: 20
+    }
+  
+    await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+  
 })
 
-test('if likes not set, likes equal 0', async () => {
-  const newBlog =  {
-    title: "Canonical string reduction",
-    author: "Edsger W. Dijkstra",
-    url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
-  }
-  
-  const response = await api.post('/api/blogs')
-    .send(newBlog)
-
-  expect(response.body.likes).toBe(0)
-})
-
-test('blog without title and url not added', async () => {
-  const newBlog = {
-    author: 'Ronja Pahaoja',
-    likes: 20
-  }
-  
-  await api.post('/api/blogs')
-    .send(newBlog)
-    .expect(400)
+describe('deleting blogs with http delete', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const blogsAtStart = await api.get('/api/blogs')
+    const blogToDelete = blogsAtStart.body[0]
+    console.log(blogToDelete)
+    
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+    
+    const blogsAtEnd = await api.get('/api/blogs')
+    
+    expect(blogsAtEnd.body).toHaveLength(initialBlogs.length - 1)
+  })
 })
 
 afterAll(() => {
