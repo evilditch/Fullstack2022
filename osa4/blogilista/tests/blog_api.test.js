@@ -91,6 +91,17 @@ test('if likes not set, likes equal 0', async () => {
   expect(response.body.likes).toBe(0)
 })
 
+test('blog without title and url not added', async () => {
+  const newBlog = {
+    author: 'Ronja Pahaoja',
+    likes: 20
+  }
+  
+  await api.post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
