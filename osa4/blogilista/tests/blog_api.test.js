@@ -65,6 +65,11 @@ test('there are two blogs', async () => {
   expect(response.body).toHaveLength(2)
 })
 
+test('the identifier field is named id', async () => {
+  const response = await api.get('/api/blogs')
+  expect(response.body[0].id).toBeDefined()
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
