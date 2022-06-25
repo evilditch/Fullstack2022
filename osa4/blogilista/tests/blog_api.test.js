@@ -106,7 +106,6 @@ describe('deleting blogs with http delete', () => {
   test('succeeds with status code 204 if id is valid', async () => {
     const blogsAtStart = await api.get('/api/blogs')
     const blogToDelete = blogsAtStart.body[0]
-    console.log(blogToDelete)
     
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
@@ -115,6 +114,18 @@ describe('deleting blogs with http delete', () => {
     const blogsAtEnd = await api.get('/api/blogs')
     
     expect(blogsAtEnd.body).toHaveLength(initialBlogs.length - 1)
+  })
+})
+
+describe('updating blogs with http put', () => {
+  test('update number of likes retunrs same blog with updated likes', async () => {
+    const blogsAtStart = await api.get('/api/blogs')
+    
+    const blogToUpdate = {...blogsAtStart.body[0], likes: blogsAtStart.body[0].likes + 2 }
+    
+    const response = await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate)
+    
+    expect(response.body).toEqual(blogToUpdate)
   })
 })
 
