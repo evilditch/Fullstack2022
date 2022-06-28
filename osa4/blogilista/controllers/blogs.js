@@ -1,7 +1,16 @@
+const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const logger = require('../utils/logger')
+
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer')) {
+    return authorization.substring(7)
+  }
+  return null
+}
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
@@ -9,16 +18,24 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
+  const token = getTokenFrom(request)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
   
-  if (!body.title || !body.url) {
-    return response.status(400).end()
+  if (!token || !decodedToken.id) {
+    return response.status(401).json({
+      error: 'missing or invalid token'
+    })
   }
+
+  const user = await User.findById(decodedToken.id)
+  logger.info('user ', user)
   
-  // haetaan kaikki käyttäjät ja otetaan listan eka blogin luovaksi käyttäjäksié
-  const users = await User.find({})
-  const user = users[0]
+  // if (!body.title || !body.url) {
+  //   return response.status(400).end()
+  // }
+  
 
   const blog = new Blog({
     title: body.title,
@@ -28,11 +45,15 @@ blogsRouter.post('/', async (request, response) => {
     user: user._id
   })
 
-  const savedBlog = await blog.save()
-  user.blogs = user.blogs.concat(savedBlog._id)
-  await user.save()
+  try {
+    const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
 
-  response.status(201).json(savedBlog)
+    response.status(201).json(savedBlog)
+  } catch(exception) {
+    next(exception)
+  }
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
