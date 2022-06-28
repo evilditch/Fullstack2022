@@ -23,21 +23,12 @@ app.use(cors())
 app.use(express.json())
 
 app.use(middleware.tokenExtractor)
+
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
-  app.use('/api/login', loginRouter)
+app.use('/api/login', loginRouter)
 
-const errorHandler = (err, req, res, next) => {
-  logger.error(err.message)
 
-  if (err.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' })
-  } else if (err.name === 'ValidationError') {
-    return res.status(400).json({ error: err.message })
-  }
-  next(err)
-}
-
-app.use(errorHandler)
+app.use(middleware.errorHandler)
 
 module.exports = app

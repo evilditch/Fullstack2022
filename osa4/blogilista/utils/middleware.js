@@ -1,3 +1,6 @@
+const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const logger = require('./logger')
 
 const tokenExtractor = (request, response, next) => {
   const authorization = request.get('authorization')
@@ -9,4 +12,36 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
-module.exports = { tokenExtractor }
+const errorHandler = (err, req, res, next) => {
+  logger.error(err.message)
+
+  if (err.name === 'CastError') {
+    return res.status(400).send({ error: 'malformatted id' })
+  } else if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: err.message })
+  } else if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      error: 'invalid token'
+    })
+  }
+  
+  next(err)
+}
+
+const userExtractor = async (request, response, next) => {
+  try {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  } catch(exception) {
+    next(exception)
+    return
+  }
+  
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: 'invalid or missing token'})
+  }
+  
+  request.user = await User.findById(decodedToken.id)
+  next()
+}
+
+module.exports = { tokenExtractor, errorHandler, userExtractor }
