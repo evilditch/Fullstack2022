@@ -1,8 +1,11 @@
+const User = require('../models/user')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const logger = require('../utils/logger')
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
+  const blogs = await Blog
+    .find({}).populate('user', { name: 1, username: 1 })
   response.json(blogs)
 })
 
@@ -12,14 +15,23 @@ blogsRouter.post('/', async (request, response) => {
   if (!body.title || !body.url) {
     return response.status(400).end()
   }
+  
+  // haetaan kaikki käyttäjät ja otetaan listan eka blogin luovaksi käyttäjäksié
+  const users = await User.find({})
+  const user = users[0]
+
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes || 0
+    likes: body.likes || 0,
+    user: user._id
   })
 
   const savedBlog = await blog.save()
+  user.blogs = user.blogs.concat(savedBlog._id)
+  await user.save()
+
   response.status(201).json(savedBlog)
 })
 
