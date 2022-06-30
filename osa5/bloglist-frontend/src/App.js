@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -11,6 +12,7 @@ const App = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -41,7 +43,11 @@ const App = () => {
       setPassword('')
       console.log('kirjautuminen onnistui')
     } catch(exception) {
-      console.log('ei onnaa')
+      console.log(exception)
+      setMessage('Username or password incorrect')
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     }
   }
   
@@ -56,6 +62,11 @@ const App = () => {
       setTitle('')
       setAuthor('')
       setUrl('')
+    
+      setMessage(`A new blog ${newBlog.title} by ${newBlog.author} added`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     } catch(exception) {
       console.log('lisäys ei onnistunutkaan', exception)
     }
@@ -69,6 +80,7 @@ const App = () => {
   if (user === null) {
     return (
       <>
+      <Notification message={message} />
       <h2>Login to bloglist</h2>
       <form onSubmit={handleLogin}>
         <label htmlFor='username'>Username</label>
@@ -83,6 +95,7 @@ const App = () => {
 
   return (
     <div>
+    <Notification message={message} />
     <p>{user.username} logged in <button onClick={logOut}>Log out</button></p>
       <h2>blogs</h2>
       {blogs.map(blog =>
