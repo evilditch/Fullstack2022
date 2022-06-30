@@ -8,6 +8,9 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
+  const [url, setUrl] = useState('')
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -19,6 +22,7 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
+      blogService.setToken(user.token)
       setUser(user)
     }
   }, [])  
@@ -31,12 +35,29 @@ const App = () => {
       window.localStorage.setItem(
         'loggedBloglistUser', JSON.stringify(loggedUser)
       )
+      blogService.setToken(loggedUser.token)
       setUser(loggedUser)
       setUsername('')
       setPassword('')
       console.log('kirjautuminen onnistui')
     } catch(exception) {
       console.log('ei onnaa')
+    }
+  }
+  
+  const handleCreate = async (event) => {
+    event.preventDefault()
+    const blog = {
+      title, author, url
+    }
+    try {
+      const newBlog = await blogService.create(blog)
+      setBlogs(blogs.concat(newBlog))
+      setTitle('')
+      setAuthor('')
+      setUrl('')
+    } catch(exception) {
+      console.log('lisäys ei onnistunutkaan', exception)
     }
   }
   
@@ -51,9 +72,9 @@ const App = () => {
       <h2>Login to bloglist</h2>
       <form onSubmit={handleLogin}>
         <label htmlFor='username'>Username</label>
-        <input type='text' id='username' onChange={({ target }) => setUsername(target.value)} />
+        <input type='text' id='username' value={username} onChange={({ target }) => setUsername(target.value)} />
         <label htmlFor='password'>Password</label>
-      <input type='password' id='password' onChange={({ target }) => setPassword(target.value)} />
+      <input type='password' id='password' value={password} onChange={({ target }) => setPassword(target.value)} />
       <button type='submit'>Login</button>
       </form>
       </>
@@ -67,6 +88,16 @@ const App = () => {
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
+      <h2>Add new blog</h2>
+      <form onSubmit={handleCreate}>
+        <label htmlFor='title'>Title</label>
+        <input type='text' id='title' value={title} onChange={({ target }) => setTitle(target.value)} />
+        <label htmlFor='author'>Author</label>
+        <input type='text' id='author' value={author} onChange={({ target }) => setAuthor(target.value)} />
+        <label htmlFor='url'>Url</label>
+        <input type='text' id='url' value={url} onChange={({ target }) => setUrl(target.value)} />
+        <button type='submit'>Add</button>
+      </form>
     </div>
   )
 }

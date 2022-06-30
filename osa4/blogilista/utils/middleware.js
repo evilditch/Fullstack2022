@@ -31,17 +31,19 @@ const errorHandler = (err, req, res, next) => {
 const userExtractor = async (request, response, next) => {
   try {
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    
+    if (!request.token || !decodedToken.id) {
+      return response.status(401).json({ error: 'invalid or missing token'})
+    }
+  
+    request.user = await User.findById(decodedToken.id)
+    next()
+  
   } catch(exception) {
     next(exception)
     return
   }
   
-  if (!request.token || !decodedToken.id) {
-    return response.status(401).json({ error: 'invalid or missing token'})
-  }
-  
-  request.user = await User.findById(decodedToken.id)
-  next()
 }
 
 module.exports = { tokenExtractor, errorHandler, userExtractor }
