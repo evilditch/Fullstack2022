@@ -28,6 +28,13 @@ const App = () => {
     }
   }, [])  
 
+  const newMessage = (msg) => {
+    setMessage(msg)
+    setTimeout(() => {
+      setMessage(null)
+    }, 5000)
+  }
+
   const login = async (userObject) => {
     try {
       const loggedUser = await loginService.login(userObject)
@@ -39,10 +46,7 @@ const App = () => {
       console.log('kirjautuminen onnistui')
     } catch(exception) {
       console.log(exception)
-      setMessage('Username or password incorrect')
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
+      newMessage('Username or password incorrect')
     }
   }
   
@@ -52,10 +56,7 @@ const App = () => {
       setBlogs(blogs.concat(newBlog))
       blogFormRef.current.toggleVisibility()
     
-      setMessage(`A new blog ${newBlog.title} by ${newBlog.author} added`)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000)
+      newMessage(`A new blog ${newBlog.title} by ${newBlog.author} added`)
     } catch(exception) {
       console.log('lisäys ei onnistunutkaan', exception)
     }
@@ -67,6 +68,18 @@ const App = () => {
       setBlogs(blogs.map(blog => blog.id === updatedBlog.id ? updatedBlog : blog))
     } catch(exception) {
       console.log(exception)
+    }
+  }
+  
+  const handleDelete = async (blog) => {
+    if (window.confirm(`Are you sure you want to delete blog '${blog.title}'?`)) {
+      try {
+        await blogService.deleteBlog(blog.id)
+        setBlogs(blogs.filter(b => b.id !== blog.id))
+        newMessage(`Blog '${blog.title}' deleted`)
+      } catch(exception) {
+        console.log(exception)
+      }
     }
   }
   
@@ -90,7 +103,7 @@ const App = () => {
       <p>{user.username} logged in <button onClick={logOut}>Log out</button></p>
       <h2>blogs</h2>
     {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
-        <Blog key={blog.id} blog={blog} like={handleLike} />
+        <Blog key={blog.id} blog={blog} like={handleLike} deleteBlog={blog.user.username === user.username ? handleDelete : null} />
       )}
       <Togglable buttonLabel='Add a blog' ref={blogFormRef}>
         <BlogForm create={handleCreate} />
