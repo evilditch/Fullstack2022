@@ -1,18 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [message, setMessage] = useState(null)
+  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -29,18 +28,14 @@ const App = () => {
     }
   }, [])  
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    
+  const login = async (userObject) => {
     try {
-      const loggedUser = await loginService.login({ username, password })
+      const loggedUser = await loginService.login(userObject)
       window.localStorage.setItem(
         'loggedBloglistUser', JSON.stringify(loggedUser)
       )
       blogService.setToken(loggedUser.token)
       setUser(loggedUser)
-      setUsername('')
-      setPassword('')
       console.log('kirjautuminen onnistui')
     } catch(exception) {
       console.log(exception)
@@ -51,17 +46,11 @@ const App = () => {
     }
   }
   
-  const handleCreate = async (event) => {
-    event.preventDefault()
-    const blog = {
-      title, author, url
-    }
+  const handleCreate = async (blogObject) => {
     try {
-      const newBlog = await blogService.create(blog)
+      const newBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat(newBlog))
-      setTitle('')
-      setAuthor('')
-      setUrl('')
+      blogFormRef.current.toggleVisibility()
     
       setMessage(`A new blog ${newBlog.title} by ${newBlog.author} added`)
       setTimeout(() => {
@@ -80,37 +69,23 @@ const App = () => {
   if (user === null) {
     return (
       <>
-      <Notification message={message} />
-      <h2>Login to bloglist</h2>
-      <form onSubmit={handleLogin}>
-        <label htmlFor='username'>Username</label>
-        <input type='text' id='username' value={username} onChange={({ target }) => setUsername(target.value)} />
-        <label htmlFor='password'>Password</label>
-      <input type='password' id='password' value={password} onChange={({ target }) => setPassword(target.value)} />
-      <button type='submit'>Login</button>
-      </form>
+        <Notification message={message} />
+        <LoginForm login={login} />
       </>
     )
   }
 
   return (
     <div>
-    <Notification message={message} />
-    <p>{user.username} logged in <button onClick={logOut}>Log out</button></p>
+      <Notification message={message} />
+      <p>{user.username} logged in <button onClick={logOut}>Log out</button></p>
       <h2>blogs</h2>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
-      <h2>Add new blog</h2>
-      <form onSubmit={handleCreate}>
-        <label htmlFor='title'>Title</label>
-        <input type='text' id='title' value={title} onChange={({ target }) => setTitle(target.value)} />
-        <label htmlFor='author'>Author</label>
-        <input type='text' id='author' value={author} onChange={({ target }) => setAuthor(target.value)} />
-        <label htmlFor='url'>Url</label>
-        <input type='text' id='url' value={url} onChange={({ target }) => setUrl(target.value)} />
-        <button type='submit'>Add</button>
-      </form>
+      <Togglable buttonLabel='Add a blog' ref={blogFormRef}>
+        <BlogForm create={handleCreate} />
+      </Togglable>
     </div>
   )
 }
