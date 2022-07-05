@@ -1,20 +1,20 @@
 import { useState } from 'react'
 
-const Blog = ({blog, like, deleteBlog}) => {
+const Blog = ({ blog, like, deleteBlog }) => {
   const [expanded, setExpanded] = useState(false)
-  
+
   const showWhenExpanded = { display: expanded ? '' : 'none' }
 
-  const expand = (event) => {
+  const expand = () => {
     setExpanded(!expanded)
   }
-  
+
   const handleLike = (event) => {
     event.preventDefault()
     like(blog)
   }
-  
-  const handleDelete = (event) => {
+
+  const handleDelete = () => {
     deleteBlog(blog)
   }
 
@@ -28,10 +28,10 @@ const Blog = ({blog, like, deleteBlog}) => {
           <dt>User</dt><dd>{blog.user.username}</dd>
         </dl>
         <button onClick={handleLike}>Like</button>
-    { deleteBlog && <button onClick={handleDelete}>Delete</button>}
-      <button onClick={expand}>Hide</button>
+        { deleteBlog && <button onClick={handleDelete}>Delete</button>}
+        <button onClick={expand}>Hide</button>
       </div>
-    </div>  
+    </div>
   )
 }
 

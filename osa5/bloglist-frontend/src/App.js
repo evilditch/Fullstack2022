@@ -16,9 +16,9 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
-  
+
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
@@ -26,7 +26,7 @@ const App = () => {
       blogService.setToken(user.token)
       setUser(user)
     }
-  }, [])  
+  }, [])
 
   const newMessage = (msg) => {
     setMessage(msg)
@@ -49,19 +49,19 @@ const App = () => {
       newMessage('Username or password incorrect')
     }
   }
-  
+
   const handleCreate = async (blogObject) => {
     try {
       const newBlog = await blogService.create(blogObject)
       setBlogs(blogs.concat(newBlog))
       blogFormRef.current.toggleVisibility()
-    
+
       newMessage(`A new blog ${newBlog.title} by ${newBlog.author} added`)
     } catch(exception) {
       console.log('lisäys ei onnistunutkaan', exception)
     }
   }
-  
+
   const handleLike = async (blog) => {
     try {
       const updatedBlog = await blogService.updateLikes(blog)
@@ -70,7 +70,7 @@ const App = () => {
       console.log(exception)
     }
   }
-  
+
   const handleDelete = async (blog) => {
     if (window.confirm(`Are you sure you want to delete blog '${blog.title}'?`)) {
       try {
@@ -82,12 +82,12 @@ const App = () => {
       }
     }
   }
-  
-  const logOut = (event) => {
+
+  const logOut = () => {
     window.localStorage.removeItem('loggedBloglistUser')
     setUser(null)
   }
-  
+
   if (user === null) {
     return (
       <>
@@ -102,7 +102,7 @@ const App = () => {
       <Notification message={message} />
       <p>{user.username} logged in <button onClick={logOut}>Log out</button></p>
       <h2>blogs</h2>
-    {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
+      {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
         <Blog key={blog.id} blog={blog} like={handleLike} deleteBlog={blog.user.username === user.username ? handleDelete : null} />
       )}
       <Togglable buttonLabel='Add a blog' ref={blogFormRef}>
