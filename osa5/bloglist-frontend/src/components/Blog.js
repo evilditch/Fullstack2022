@@ -19,9 +19,10 @@ const Blog = ({ blog, like, deleteBlog }) => {
   }
 
   return (
-    <div>
+    <div className='blog'>
       <button onClick={expand} aria-expanded={expanded}>{blog.title} {blog.author} { expanded ? '-' : '+' }</button>
-      <div style={showWhenExpanded}>
+    { expanded && 
+      <div className='blog-meta' style={showWhenExpanded}>
         <dl>
           <dt>Url</dt><dd>{blog.url}</dd>
           <dt>Likes</dt><dd>{blog.likes}</dd>
@@ -30,7 +31,7 @@ const Blog = ({ blog, like, deleteBlog }) => {
         <button onClick={handleLike}>Like</button>
         { deleteBlog && <button onClick={handleDelete}>Delete</button>}
         <button onClick={expand}>Hide</button>
-      </div>
+        </div> }
     </div>
   )
 }
