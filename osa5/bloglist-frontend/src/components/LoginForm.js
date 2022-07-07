@@ -20,7 +20,7 @@ const LoginForm = (props) => {
         <input type='text' id='username' value={username} onChange={({ target }) => setUsername(target.value)} />
         <label htmlFor='password'>Password</label>
         <input type='password' id='password' value={password} onChange={({ target }) => setPassword(target.value)} />
-        <button type='submit'>Login</button>
+        <button type='submit' id='loginbutton'>Login</button>
       </form>
     </>
   )
