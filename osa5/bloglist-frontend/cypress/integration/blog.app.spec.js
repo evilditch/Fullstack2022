@@ -31,4 +31,24 @@ describe('Blog app', function() {
       cy.contains('Username or password incorrect')
     })    
   })
+  
+  describe('When logged in', function() {
+    beforeEach(function() {
+      cy.get('#username').type('Pahis')
+      cy.get('#password').type('salainen')
+      cy.get('#loginbutton').click()
+      
+    })
+    
+    it('A blog can be created', function() {
+      cy.contains('Pahis logged in')
+      cy.get('button').contains('Add').click()
+      cy.get('#title').type('Blogin otsikko')
+      cy.get('#author').type('Pahaoja')
+      cy.get('#url').type('http://pahaoja.fi')
+      cy.get('button[type=submit]').click()
+      
+      cy.contains('Blogin otsikko Pahaoja')
+    })
+  })
 })
