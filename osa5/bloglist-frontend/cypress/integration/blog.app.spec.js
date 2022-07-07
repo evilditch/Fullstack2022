@@ -34,14 +34,10 @@ describe('Blog app', function() {
   
   describe('When logged in', function() {
     beforeEach(function() {
-      cy.get('#username').type('Pahis')
-      cy.get('#password').type('salainen')
-      cy.get('#loginbutton').click()
-      
+      cy.login({ username: 'Pahis', password: 'salainen' })
     })
     
     it('A blog can be created', function() {
-      cy.contains('Pahis logged in')
       cy.get('button').contains('Add').click()
       cy.get('#title').type('Blogin otsikko')
       cy.get('#author').type('Pahaoja')
@@ -49,6 +45,21 @@ describe('Blog app', function() {
       cy.get('button[type=submit]').click()
       
       cy.contains('Blogin otsikko Pahaoja')
+    })
+    
+    describe('A blog exists', function() {
+      beforeEach(function() {
+        cy.createBlog({
+          title: 'Cypress testing',
+          author: 'Ronja Pahaoja',
+          url: 'http://pahaoja.fi'
+        })
+      })
+      
+      it('Blog can be liked', function() {
+        cy.contains('Cypress testing').click()
+        cy.get('button').contains('Like').click()
+      })
     })
   })
 })
